@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: checkout-slo
+  labels:
+    release: monitoring
+spec:
+  groups:
+    - name: checkout-slo
+      rules:
+        - record: checkout:requests:ratio_rate5m
+          expr: |
+            sum(rate(http_request_duration_seconds_bucket{route="/checkout", le="2"}[5m]))
+            /
+            sum(rate(http_request_duration_seconds_count{route="/checkout"}[5m]))
+        - alert: CheckoutSLOFastBurn
+          expr: checkout:requests:ratio_rate5m < 0.99
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Checkout SLO burning fast"

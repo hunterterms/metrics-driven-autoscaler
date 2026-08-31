@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checkout-service
+  template:
+    metadata:
+      labels:
+        app: checkout-service
+    spec:
+      containers:
+        - name: checkout-service
+          image: checkout-service:local
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "128Mi"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: WORKER_CONCURRENCY
+              value: "3"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkout-service
+  labels:
+    app: checkout-service
+spec:
+  selector:
+    app: checkout-service
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

@@ -1,0 +1,17 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: checkout-service
+spec:
+  scaleTargetRef:
+    name: checkout-service
+  pollingInterval: 5
+  cooldownPeriod: 60
+  minReplicaCount: 1
+  maxReplicaCount: 10
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: http://monitoring-kube-prometheus-prometheus.monitoring.svc:9090
+        query: avg(checkout_queue_depth)
+        threshold: "5"
